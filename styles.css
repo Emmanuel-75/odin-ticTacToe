@@ -1,0 +1,76 @@
+@import url('https://fonts.googleapis.com/css2?family=Bungee&display=swap');
+
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Bungee", sans-serif;
+    color: white;
+}
+
+header{
+    background-color: #031D44;
+    text-align: center;
+    padding: 20px;
+}
+
+body{
+    background-color: #F5EDE0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 2rem;
+}
+
+.notification{
+    width: 90%;
+    max-width: 350px;
+    align-self: center;
+    padding: 10px 20px;
+    background-color: #031D44;
+    border-radius: 10px;
+    text-align: center;
+}
+
+button[type='reset']{
+    width: fit-content;
+    align-self: center;
+    padding: 10px 20px;
+    background-color: #031D44;
+    border: none;
+    cursor: pointer;
+    border-radius: 20px;
+}
+
+div{
+    align-self: center;
+    width: 80%;
+    max-width: 400px;
+    display: grid;
+    grid-template-columns: repeat(3,1fr);
+    grid-template-rows: repeat(3, 120px);
+    border: 2px solid #04395E;
+}
+
+div button{
+    border: none;
+    border: 2px solid #F5EDE0;
+    font-size: 3rem;
+    background-color: #032F4E;
+    cursor: pointer;
+}
+
+button[type='reset']:active{
+    scale: 0.9;
+}
+
+div button:hover{
+    opacity: 0.9;
+}
+
+footer{
+    text-align: center;
+    background-color: #031D44;
+    padding: 20px;
+}
