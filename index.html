@@ -11,19 +11,35 @@
       <h1>Tic Tac Toe</h1>
       <p>Hope you enjoy it?🫣</p>
     </header>
-        <p class="notification">Welcome Buddy !!!!</p>
-        <button type="reset">reset</button>
-      <div class="ticTacToeBoard">
-        <button class="cell"></button>
-        <button class="cell"></button>
-        <button class="cell"></button>
-        <button class="cell"></button>
-        <button class="cell"></button>
-        <button class="cell"></button>
-        <button class="cell"></button>
-        <button class="cell"></button>
-        <button class="cell"></button>
-      </div>
+    <p class="notification">Welcome Buddy !!!!</p>
+    <div class="funcButtons">
+      <button class="customNames">Give custom players to players</button>
+      <button type="reset">reset</button>
+    </div>
+    <div class="ticTacToeBoard">
+      <button class="cell"></button>
+      <button class="cell"></button>
+      <button class="cell"></button>
+      <button class="cell"></button>
+      <button class="cell"></button>
+      <button class="cell"></button>
+      <button class="cell"></button>
+      <button class="cell"></button>
+      <button class="cell"></button>
+    </div>
+    <dialog closedby="any">
+      <form action="">
+        <div>
+          <label for="playerOneName">Player One's name:</label>
+          <input type="text" id="playerOneName" required/>
+        </div>
+        <div>
+          <label for="playerTwoName">Player Two's name:</label>
+          <input type="text" id="playerTwoName" required/>
+        </div>
+        <button type="submit">Submit</button>
+      </form>
+    </dialog>
     <footer>&copy; DevManolis</footer>
     <script src="script.js"></script>
   </body>

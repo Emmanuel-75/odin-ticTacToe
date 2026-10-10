@@ -1,76 +1,134 @@
-@import url('https://fonts.googleapis.com/css2?family=Bungee&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Bungee&display=swap");
 
-*{
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: "Bungee", sans-serif;
-    color: white;
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Bungee", sans-serif;
+  color: white;
 }
 
-header{
-    background-color: #031D44;
-    text-align: center;
-    padding: 20px;
+header {
+  background-color: #031d44;
+  text-align: center;
+  padding: 20px;
 }
 
-body{
-    background-color: #F5EDE0;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    gap: 2rem;
+body {
+  background-color: #f5ede0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 2rem;
 }
 
-.notification{
-    width: 90%;
-    max-width: 350px;
-    align-self: center;
-    padding: 10px 20px;
-    background-color: #031D44;
-    border-radius: 10px;
-    text-align: center;
+.notification {
+  width: min(90%, 450px);
+  align-self: center;
+  padding: 10px 20px;
+  background-color: #031d44;
+  border-radius: 10px;
+  text-align: center;
 }
 
-button[type='reset']{
-    width: fit-content;
-    align-self: center;
-    padding: 10px 20px;
-    background-color: #031D44;
-    border: none;
-    cursor: pointer;
-    border-radius: 20px;
+.funcButtons {
+  align-self: center;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem;
 }
 
-div{
-    align-self: center;
-    width: 80%;
-    max-width: 400px;
-    display: grid;
-    grid-template-columns: repeat(3,1fr);
-    grid-template-rows: repeat(3, 120px);
-    border: 2px solid #04395E;
+.funcButtons button {
+  width: fit-content;
+  align-self: center;
+  padding: 10px 20px;
+  background-color: #031d44;
+  border: none;
+  cursor: pointer;
+  border-radius: 20px;
 }
 
-.cell{
-    border: none;
-    border: 2px solid #F5EDE0;
-    font-size: 3rem;
-    background-color: #032F4E;
-    cursor: pointer;
+.ticTacToeBoard {
+  align-self: center;
+  width: min(80%, 450px);
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 120px);
+  border: 2px solid #04395e;
 }
 
-button[type='reset']:active{
-    scale: 0.9;
+.cell {
+  border: none;
+  border: 2px solid #f5ede0;
+  font-size: 3rem;
+  background-color: #032f4e;
+  cursor: pointer;
 }
 
-.cell:hover{
-    opacity: 0.9;
+.funcButtons button:active , button[type='submit']:active{
+  scale: 0.9;
 }
 
-footer{
-    text-align: center;
-    background-color: #031D44;
-    padding: 20px;
+.cell:hover {
+  opacity: 0.9;
+}
+
+dialog {
+  width: min(90%, 450px);
+  border: none;
+  margin: auto;
+  outline: none;
+  border-radius: 20px;
+  background-color: #04395e;
+  color: #f5ede0;
+}
+
+dialog::backdrop {
+  background: rgba(59, 130, 246, 0.2);
+  backdrop-filter: blur(4px);
+}
+
+dialog form {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+dialog div {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+
+input {
+  color: #031d44;
+  background-color: #f5ede0;
+  border: none;
+  padding: 0.8rem;
+  border-radius: 10px;
+  padding-top: 1rem;
+  outline: none;
+  font-weight: 900;
+}
+
+button[type="submit"] {
+  width: fit-content;
+  margin: auto;
+  padding: 0.5rem 1.5rem;
+  color: #04395e;
+  background-color: #f5ede0;
+  border: none;
+  border-radius: 20px;
+  font-size: 1.3rem;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+footer {
+  text-align: center;
+  background-color: #031d44;
+  padding: 20px;
 }

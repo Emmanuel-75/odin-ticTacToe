@@ -12,10 +12,10 @@ function GameBoard() {
   For this 2d array, row 0 will represent the top row and column 0 will represent the left-most column.
   This nested-loop technique is a simple and common way to create a 2d array.
 */
-  for (let i = 0; i < rows; i++) {
-    board[i] = [];
-    for (let j = 0; j < columns; j++) {
-      board[i].push(Cell());
+  for (let row = 0; row < rows; row++) {
+    board[row] = [];
+    for (let column = 0; column < columns; column++) {
+      board[row].push(Cell());
     }
   }
 
@@ -24,12 +24,16 @@ function GameBoard() {
 
   // In order to drop a token, i need to find if the selected cell already has no value, *then* change that cell's value to the player token or leave it
   const fillCell = (row, column, player) => {
-    if (board[row][column].getValue() != "") {
-      console.log("space taken dummy");
-      return "cell filling failed";
-    }
-    board[row][column].addMark(player);
-    return "cell filling success";
+    if (
+      !Number.isInteger(row) ||
+      !Number.isInteger(column) ||
+      row < 0 ||
+      row >= rows ||
+      column < 0 ||
+      column >= columns
+    )
+      return false;
+    return board[row][column].addMark(player);
   };
 
   // Here, interface for the rest of our application to interact with the board is presented
@@ -47,7 +51,9 @@ function Cell() {
 
   // Accept a player's token to change the value of the cell
   const addMark = (player) => {
+    if (value !== "") return false;
     value = player;
+    return true;
   };
 
   // Retrieve the current value of this cell through closure
@@ -65,8 +71,10 @@ function Cell() {
  */
 function GameController() {
   let board = GameBoard();
-  let gameEnded = false;
-  let message;
+  let activePlayer = players[0];
+  let message = `${activePlayer.name}'s turn.`;
+  let gameStatus = "playing";
+
   const players = [
     {
       name: "Player One",
@@ -77,42 +85,7 @@ function GameController() {
       token: "o",
     },
   ];
-  let activePlayer = players[0];
 
-  const switchPlayerTurn = () => {
-    activePlayer = activePlayer === players[0] ? players[1] : players[0];
-  };
-
-  const getMessage = () => message;
-
-  const getActivePlayer = () => activePlayer;
-
-  const getBoardState = () => board.getBoard();
-
-  const printNewRound = () => {
-    message = `${getActivePlayer().name}'s turn.`;
-  };
-
-  const playRound = (row, column) => {
-    if (gameEnded) {
-      message = "The last game has ended, reset the game";
-      return;
-    }
-    const stat = board.fillCell(row, column, getActivePlayer().token);
-    if (stat == "cell filling failed") return;
-    message = `Dropping ${getActivePlayer().name}'s token into row ${row} column ${column}...`;
-
-    if (checkForWin() == "game ended") {
-      message = `Hurray, ${getActivePlayer().name} won!!!!🥳`;
-      return;
-    } else if (checkForTie() == "game draw") {
-      message = "Oh my, the game ends with a tie😓";
-      return;
-    }
-    // Switch player turn
-    switchPlayerTurn();
-    printNewRound();
-  };
   const winningRules = [
     { cell1: [0, 0], cell2: [0, 1], cell3: [0, 2] },
     { cell1: [1, 0], cell2: [1, 1], cell3: [1, 2] },
@@ -124,50 +97,88 @@ function GameController() {
     { cell1: [0, 2], cell2: [1, 1], cell3: [2, 0] },
   ];
 
+  const getMessage = () => message;
+
+  const getActivePlayer = () => activePlayer;
+
+  const getBoardState = () => board.getBoard();
+
+  const getGameStatus = () => gameStatus;
+
+  const switchPlayerTurn = () => {
+    activePlayer = activePlayer === players[0] ? players[1] : players[0];
+  };
+
+  const playRound = (row, column) => {
+    if (gameStatus !== "playing") {
+      message = "The game has ended. Reset to play again.";
+      return false;
+    }
+    const moveAccepted = board.fillCell(row, column, getActivePlayer().token);
+
+    if (!moveAccepted) {
+      message = "That cell is unavailable. Choose an empty cell.";
+      return false;
+    }
+
+    if (checkForWin()) {
+      gameStatus = "won";
+      message = `Hurray, ${getActivePlayer().name} wins!🥳`;
+      return true;
+    }
+
+    if (checkForTie()) {
+      gameStatus = "draw";
+      message = "It's a draw! 🤝";
+      return true;
+    }
+    // Switch player turn
+    switchPlayerTurn();
+    message = `${getActivePlayer().name}'s turn`;
+
+    return true;
+  };
+
   /*  This is where we would check for a winner and handle that logic, such as a win message. */
 
-  const checkForWin = function () {
-    const getCellValue = ([row, col]) => getBoardState()[row][col];
-    const gameResult = winningRules.some((condition) => {
+  const checkForWin = () => {
+    const getCellValue = ([row, col]) => getBoardState()[row][col].getValue();
+    return winningRules.some((condition) => {
       const a = getCellValue(condition.cell1);
       const b = getCellValue(condition.cell2);
       const c = getCellValue(condition.cell3);
 
       return a != "" && a == b && b == c;
     });
-
-    if (gameResult) {
-      gameEnded = true;
-      return "game ended";
-    }
   };
 
-  const checkForTie = function () {
-    const gameResult = getBoardState().every((row) =>
-      row.every((cell) => cell.getValue() != ""),
+  const checkForTie = () => {
+    return getBoardState().every((row) =>
+      row.every((cell) => cell.getValue() !== ""),
     );
-    if (gameResult) {
-      gameEnded = true;
-      return "game draw";
-    }
   };
 
-  const resetGame = function () {
+  const resetGame = () => {
     board = GameBoard();
-    gameEnded = false;
+    gameStatus = "playing";
     activePlayer = players[0];
-    printNewRound();
+    message = `${getActivePlayer().name}'s turn.`;
   };
 
-  // Initial play game message
-  printNewRound();
+  const changePlayerNames = (newNameOne, newNameTwo) => {
+    players[0].name = newNameOne;
+    players[1].name = newNameTwo;
+    resetGame();
+  };
 
   return {
-    resetGame,
-    getMessage,
     getBoardState,
-    playRound,
     getActivePlayer,
+    getMessage,
+    getGameStatus,
+    playRound,
+    resetGame,
+    changePlayerNames,
   };
 }
 
@@ -175,13 +186,19 @@ function ScreenController() {
   const ticTacToeBoard = document.querySelector(".ticTacToeBoard");
   const notificationBar = document.querySelector(".notification");
   const resetBtn = document.querySelector("button[type='reset']");
+  const customNames = document.querySelector(".customNames");
+  const dialog = document.querySelector("dialog");
+  const nameForm = dialog.querySelector("form");
+  const nameOne = dialog.querySelector("#playerOneName");
+  const nameTwo = dialog.querySelector("#playerTwoName");
 
   const game = GameController();
 
   const updateScreen = () => {
-    ticTacToeBoard.innerHTML = "";
+    ticTacToeBoard.replaceChildren();
 
     const board = game.getBoardState();
+    const gameStatus = game.getGameStatus();
 
     notificationBar.textContent = game.getMessage();
 
@@ -189,12 +206,20 @@ function ScreenController() {
       row.forEach((cell, cellIndex) => {
         // Anything clickable should be a button!!
         const cellButton = document.createElement("button");
+
+        cellButton.type = "button";
         cellButton.classList.add("cell");
         // Create a data attribute to identify the column
         // This makes it easier to pass into our `playRound` function
         cellButton.dataset.row = rowIndex;
         cellButton.dataset.column = cellIndex;
         cellButton.textContent = cell.getValue();
+        cellButton.setAttribute(
+          "aria-label",
+          `Row ${rowIndex + 1}, column ${columnIndex + 1}: ${
+            cell.getValue() || "empty"
+          }`,
+        );
         ticTacToeBoard.appendChild(cellButton);
       });
     });
@@ -203,18 +228,54 @@ function ScreenController() {
   // Add event listener for the board
   function clickHandlerBoard(e) {
     // Make sure I've clicked a column and not the gaps in between
-    if (!e.target.closest(".cell")) return;
+    const cellButton = e.target.closest(".cell");
+    if (!cellButton || !ticTacToeBoard.contains(cellButton)) return;
 
-    const selectedColumn = Number(e.target.dataset.column);
-    const selectedRow = Number(e.target.dataset.row);
+    const selectedColumn = Number(cellButton.dataset.column);
+    const selectedRow = Number(cellButton.dataset.row);
 
     game.playRound(selectedRow, selectedColumn);
     updateScreen();
   }
+
+  function giveCustomNames(e) {
+    e.preventDefault();
+    const firstName = nameOne.value.replace(/^\s+|\s+$/g, "");
+    const secondName = nameTwo.value.replace(/^\s+|\s+$/g, "");
+
+    if (!(firstName.length < 2 && secondName.length < 2)) {
+      alert("Each player's name must contain at least 2 characters.");
+      return;
+    }
+
+    if (
+      firstName.toLowerCase() == secondName.toLowerCase()
+    ) {
+      alert("Players must have different names.");
+      return;
+    }
+    game.changePlayerNames(firstName,secondName);
+
+    nameForm.reset();
+    updateScreen();
+    dialog.close();
+  }
+
   ticTacToeBoard.addEventListener("click", clickHandlerBoard);
+
   resetBtn.addEventListener("click", () => {
     game.resetGame();
     updateScreen();
+  });
+
+  customNames.addEventListener("click", () => {
+    if (!dialog.open){
+      dialog.showModal();
+    }
+  });
+
+  nameForm.addEventListener("submit", (e) => {
+    giveCustomNames(e);
   });
   // Initial render
   updateScreen();
