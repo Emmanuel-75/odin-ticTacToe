@@ -53,14 +53,18 @@ function Cell() {
   // Retrieve the current value of this cell through closure
   const getValue = () => value;
 
-  return { addMark, getValue };
+  const clearCell = function () {
+    value = "";
+  };
+
+  return { addMark, getValue, clearCell };
 }
 
 /*
  The GameController will be responsible for controlling the flow and state of the game's turns, as well as whether anybody has won the game
  */
 function GameController() {
-  const board = GameBoard();
+  let board = GameBoard();
   let gameEnded = false;
   let message;
   const players = [
@@ -109,9 +113,6 @@ function GameController() {
     switchPlayerTurn();
     printNewRound();
   };
-
-  /*  This is where we would check for a winner and handle that logic, such as a win message. */
-
   const winningRules = [
     { cell1: [0, 0], cell2: [0, 1], cell3: [0, 2] },
     { cell1: [1, 0], cell2: [1, 1], cell3: [1, 2] },
@@ -123,22 +124,17 @@ function GameController() {
     { cell1: [0, 2], cell2: [1, 1], cell3: [2, 0] },
   ];
 
+  /*  This is where we would check for a winner and handle that logic, such as a win message. */
+
   const checkForWin = function () {
-    const gameResult = winningRules.some(
-      (condition) =>
-        (getBoardState()[condition.cell1[0]][condition.cell1[1]].getValue() ==
-          "x" &&
-          getBoardState()[condition.cell2[0]][condition.cell2[1]].getValue() ==
-            "x" &&
-          getBoardState()[condition.cell3[0]][condition.cell3[1]].getValue() ==
-            "x") ||
-        (getBoardState()[condition.cell1[0]][condition.cell1[1]].getValue() ==
-          "o" &&
-          getBoardState()[condition.cell2[0]][condition.cell2[1]].getValue() ==
-            "o" &&
-          getBoardState()[condition.cell3[0]][condition.cell3[1]].getValue() ==
-            "o"),
-    );
+    const getCellValue = ([row, col]) => getBoardState()[row][col];
+    const gameResult = winningRules.some((condition) => {
+      const a = getCellValue(condition.cell1);
+      const b = getCellValue(condition.cell2);
+      const c = getCellValue(condition.cell3);
+
+      return a != "" && a == b && b == c;
+    });
 
     if (gameResult) {
       gameEnded = true;
@@ -156,10 +152,18 @@ function GameController() {
     }
   };
 
+  const resetGame = function () {
+    board = GameBoard();
+    gameEnded = false;
+    activePlayer = players[0];
+    printNewRound();
+  };
+
   // Initial play game message
   printNewRound();
 
   return {
+    resetGame,
     getMessage,
     getBoardState,
     playRound,
@@ -170,6 +174,7 @@ function GameController() {
 function ScreenController() {
   const ticTacToeBoard = document.querySelector(".ticTacToeBoard");
   const notificationBar = document.querySelector(".notification");
+  const resetBtn = document.querySelector("button[type='reset']");
 
   const game = GameController();
 
@@ -177,7 +182,6 @@ function ScreenController() {
     ticTacToeBoard.innerHTML = "";
 
     const board = game.getBoardState();
-    const activePlayer = game.getActivePlayer();
 
     notificationBar.textContent = game.getMessage();
 
@@ -198,16 +202,20 @@ function ScreenController() {
 
   // Add event listener for the board
   function clickHandlerBoard(e) {
-    const selectedColumn = Number(e.target.dataset.column);
-    const selectedRow = Number(e.target.dataset.row);
     // Make sure I've clicked a column and not the gaps in between
     if (!e.target.closest(".cell")) return;
+
+    const selectedColumn = Number(e.target.dataset.column);
+    const selectedRow = Number(e.target.dataset.row);
 
     game.playRound(selectedRow, selectedColumn);
     updateScreen();
   }
   ticTacToeBoard.addEventListener("click", clickHandlerBoard);
-
+  resetBtn.addEventListener("click", () => {
+    game.resetGame();
+    updateScreen();
+  });
   // Initial render
   updateScreen();
 }
