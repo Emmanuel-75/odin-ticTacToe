@@ -32,18 +32,8 @@ function GameBoard() {
     return "cell filling success";
   };
 
-  /* This method will be used to print the board to the console.
-  It is helpful to see what the board looks like after each turn as we play, but it won't be needed it after the UI is built
-  */
-  const printBoard = () => {
-    const boardWithCellValues = board.map((row) =>
-      row.map((cell) => cell.getValue()),
-    );
-    console.log(boardWithCellValues);
-  };
-
   // Here, interface for the rest of our application to interact with the board is presented
-  return { getBoard, fillCell, printBoard };
+  return { getBoard, fillCell };
 }
 
 /*
@@ -71,8 +61,8 @@ function Cell() {
  */
 function GameController() {
   const board = GameBoard();
-  const gamingBoard = board.getBoard();
   let gameEnded = false;
+  let message;
   const players = [
     {
       name: "Player One",
@@ -89,14 +79,38 @@ function GameController() {
     activePlayer = activePlayer === players[0] ? players[1] : players[0];
   };
 
+  const getMessage = () => message;
+
   const getActivePlayer = () => activePlayer;
 
-  const getBoardState = () => board.printBoard();
+  const getBoardState = () => board.getBoard();
 
   const printNewRound = () => {
-    board.printBoard();
-    console.log(`${getActivePlayer().name}'s turn.`);
+    message = `${getActivePlayer().name}'s turn.`;
   };
+
+  const playRound = (row, column) => {
+    if (gameEnded) {
+      message = "The last game has ended, reset the game";
+      return;
+    }
+    const stat = board.fillCell(row, column, getActivePlayer().token);
+    if (stat == "cell filling failed") return;
+    message = `Dropping ${getActivePlayer().name}'s token into row ${row} column ${column}...`;
+
+    if (checkForWin() == "game ended") {
+      message = `Hurray, ${getActivePlayer().name} won!!!!🥳`;
+      return;
+    } else if (checkForTie() == "game draw") {
+      message = "Oh my, the game ends with a tie😓";
+      return;
+    }
+    // Switch player turn
+    switchPlayerTurn();
+    printNewRound();
+  };
+
+  /*  This is where we would check for a winner and handle that logic, such as a win message. */
 
   const winningRules = [
     { cell1: [0, 0], cell2: [0, 1], cell3: [0, 2] },
@@ -112,17 +126,17 @@ function GameController() {
   const checkForWin = function () {
     const gameResult = winningRules.some(
       (condition) =>
-        (gamingBoard[condition.cell1[0]][condition.cell1[1]].getValue() ==
+        (getBoardState()[condition.cell1[0]][condition.cell1[1]].getValue() ==
           "x" &&
-          gamingBoard[condition.cell2[0]][condition.cell2[1]].getValue() ==
+          getBoardState()[condition.cell2[0]][condition.cell2[1]].getValue() ==
             "x" &&
-          gamingBoard[condition.cell3[0]][condition.cell3[1]].getValue() ==
+          getBoardState()[condition.cell3[0]][condition.cell3[1]].getValue() ==
             "x") ||
-        (gamingBoard[condition.cell1[0]][condition.cell1[1]].getValue() ==
+        (getBoardState()[condition.cell1[0]][condition.cell1[1]].getValue() ==
           "o" &&
-          gamingBoard[condition.cell2[0]][condition.cell2[1]].getValue() ==
+          getBoardState()[condition.cell2[0]][condition.cell2[1]].getValue() ==
             "o" &&
-          gamingBoard[condition.cell3[0]][condition.cell3[1]].getValue() ==
+          getBoardState()[condition.cell3[0]][condition.cell3[1]].getValue() ==
             "o"),
     );
 
@@ -133,47 +147,69 @@ function GameController() {
   };
 
   const checkForTie = function () {
-    const gameResult = gamingBoard.every(row => row.every(cell => cell.getValue() != ''))
-    if (gameResult){
-      gameEnded = true;
-      return 'game draw'
-    }
-  };
-
-  const playRound = (row, column) => {
-    if (gameEnded) {
-      console.log("The last game has ended, reset the game");
-      return;
-    }
-    const stat = board.fillCell(row, column, getActivePlayer().token);
-    if (stat == "cell filling failed") return;
-    console.log(
-      `Dropping ${getActivePlayer().name}'s token into row ${row} column ${column}...`,
+    const gameResult = getBoardState().every((row) =>
+      row.every((cell) => cell.getValue() != ""),
     );
-
-    if (checkForWin() == "game ended") {
-      console.log(`Hurray, ${getActivePlayer().name} won!!!!🥳`);
-      return;
-    }else if (checkForTie() == 'game draw'){
-      console.log('Oh my, the game ends with a tie😓');
-      return;
+    if (gameResult) {
+      gameEnded = true;
+      return "game draw";
     }
-    // Switch player turn
-    switchPlayerTurn();
-    printNewRound();
   };
-
-  /*  This is where we would check for a winner and handle that logic, such as a win message. */
 
   // Initial play game message
   printNewRound();
 
-
   return {
+    getMessage,
     getBoardState,
     playRound,
     getActivePlayer,
   };
 }
 
-const game = GameController();
+function ScreenController() {
+  const ticTacToeBoard = document.querySelector(".ticTacToeBoard");
+  const notificationBar = document.querySelector(".notification");
+
+  const game = GameController();
+
+  const updateScreen = () => {
+    ticTacToeBoard.innerHTML = "";
+
+    const board = game.getBoardState();
+    const activePlayer = game.getActivePlayer();
+
+    notificationBar.textContent = game.getMessage();
+
+    board.forEach((row, rowIndex) => {
+      row.forEach((cell, cellIndex) => {
+        // Anything clickable should be a button!!
+        const cellButton = document.createElement("button");
+        cellButton.classList.add("cell");
+        // Create a data attribute to identify the column
+        // This makes it easier to pass into our `playRound` function
+        cellButton.dataset.row = rowIndex;
+        cellButton.dataset.column = cellIndex;
+        cellButton.textContent = cell.getValue();
+        ticTacToeBoard.appendChild(cellButton);
+      });
+    });
+  };
+
+  // Add event listener for the board
+  function clickHandlerBoard(e) {
+    const selectedColumn = Number(e.target.dataset.column);
+    const selectedRow = Number(e.target.dataset.row);
+    // Make sure I've clicked a column and not the gaps in between
+    if (!e.target.closest(".cell")) return;
+
+    game.playRound(selectedRow, selectedColumn);
+    updateScreen();
+  }
+  ticTacToeBoard.addEventListener("click", clickHandlerBoard);
+
+  // Initial render
+  updateScreen();
+}
+
+ScreenController();
