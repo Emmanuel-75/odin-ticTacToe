@@ -71,8 +71,6 @@ function Cell() {
  */
 function GameController() {
   let board = GameBoard();
-  let activePlayer = players[0];
-  let message = `${activePlayer.name}'s turn.`;
   let gameStatus = "playing";
 
   const players = [
@@ -85,6 +83,9 @@ function GameController() {
       token: "o",
     },
   ];
+
+  let activePlayer = players[0];
+  let message = `${activePlayer.name}'s turn.`;
 
   const winningRules = [
     { cell1: [0, 0], cell2: [0, 1], cell3: [0, 2] },
@@ -203,7 +204,7 @@ function ScreenController() {
     notificationBar.textContent = game.getMessage();
 
     board.forEach((row, rowIndex) => {
-      row.forEach((cell, cellIndex) => {
+      row.forEach((cell, columnIndex) => {
         // Anything clickable should be a button!!
         const cellButton = document.createElement("button");
 
@@ -212,7 +213,7 @@ function ScreenController() {
         // Create a data attribute to identify the column
         // This makes it easier to pass into our `playRound` function
         cellButton.dataset.row = rowIndex;
-        cellButton.dataset.column = cellIndex;
+        cellButton.dataset.column = columnIndex;
         cellButton.textContent = cell.getValue();
         cellButton.setAttribute(
           "aria-label",
@@ -243,10 +244,10 @@ function ScreenController() {
     const firstName = nameOne.value.replace(/^\s+|\s+$/g, "");
     const secondName = nameTwo.value.replace(/^\s+|\s+$/g, "");
 
-    if (!(firstName.length < 2 && secondName.length < 2)) {
-      alert("Each player's name must contain at least 2 characters.");
-      return;
-    }
+    if (firstName.length < 2 || secondName.length < 2) {
+  alert("Each player's name must contain at least 2 characters.");
+  return;
+}
 
     if (
       firstName.toLowerCase() == secondName.toLowerCase()
