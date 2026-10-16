@@ -69,7 +69,7 @@ function Cell() {
 /*
  The GameController will be responsible for controlling the flow and state of the game's turns, as well as whether anybody has won the game
  */
-function GameController() {
+function GameController(celebrate) {
   let board = GameBoard();
   let gameStatus = "playing";
 
@@ -125,6 +125,7 @@ function GameController() {
     if (checkForWin()) {
       gameStatus = "won";
       message = `Hurray, ${getActivePlayer().name} wins!🥳`;
+      celebrate();
       return true;
     }
 
@@ -183,6 +184,42 @@ function GameController() {
   };
 }
 
+function makeItRain() {
+  document.querySelector('body').disabled = true;
+  var end = Date.now() + (2 * 1000);
+
+// go Buckeyes!
+let colors = ['#bb0000', '#e5cc27'];
+let shapes = ['circle','square','star'];
+
+function frame() {
+  confetti({
+    particleCount: 2,
+    angle: 60,
+    spread: 55,
+    origin: { x: 0 },
+    colors: colors,
+    shapes: shapes
+  });
+  confetti({
+    particleCount: 2,
+    angle: 120,
+    spread: 55,
+    origin: { x: 1 },
+    colors: colors,
+    shapes: shapes
+  });
+
+  if (Date.now() < end) {
+    requestAnimationFrame(frame);
+  }
+  else {
+    document.querySelector('body').disabled = false;
+  }
+};
+  frame();
+}
+
 function ScreenController() {
   const ticTacToeBoard = document.querySelector(".ticTacToeBoard");
   const notificationBar = document.querySelector(".notification");
@@ -193,7 +230,7 @@ function ScreenController() {
   const nameOne = dialog.querySelector("#playerOneName");
   const nameTwo = dialog.querySelector("#playerTwoName");
 
-  const game = GameController();
+  const game = GameController(makeItRain);
 
   const updateScreen = () => {
     ticTacToeBoard.replaceChildren();
@@ -245,17 +282,15 @@ function ScreenController() {
     const secondName = nameTwo.value.replace(/^\s+|\s+$/g, "");
 
     if (firstName.length < 2 || secondName.length < 2) {
-  alert("Each player's name must contain at least 2 characters.");
-  return;
-}
+      alert("Each player's name must contain at least 2 characters.");
+      return;
+    }
 
-    if (
-      firstName.toLowerCase() == secondName.toLowerCase()
-    ) {
+    if (firstName.toLowerCase() == secondName.toLowerCase()) {
       alert("Players must have different names.");
       return;
     }
-    game.changePlayerNames(firstName,secondName);
+    game.changePlayerNames(firstName, secondName);
 
     nameForm.reset();
     updateScreen();
@@ -270,7 +305,7 @@ function ScreenController() {
   });
 
   customNames.addEventListener("click", () => {
-    if (!dialog.open){
+    if (!dialog.open) {
       dialog.showModal();
     }
   });
